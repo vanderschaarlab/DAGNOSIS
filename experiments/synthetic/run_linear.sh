@@ -1,0 +1,3 @@
+python generate_data.py sem_type=linear PATH_SAVE_DATA=artifacts/linearSEM_data/ PATH_SAVE_CP=artifacts/linearSEM_cp/ PATH_SAVE_CONFDICT=artifacts/linearSEM_confdict/ PATH_SAVE_METRIC=artifacts/linearSEM_metric/
+python train_cp.py PATH_SAVE_DATA=artifacts/linearSEM_data/ PATH_SAVE_CP=artifacts/linearSEM_cp/ PATH_SAVE_CONFDICT=artifacts/linearSEM_confdict/ PATH_SAVE_METRIC=artifacts/linearSEM_metric
+python test_cp.py PATH_SAVE_DATA=artifacts/linearSEM_data/ PATH_SAVE_CP=artifacts/linearSEM_cp/ PATH_SAVE_CONFDICT=artifacts/linearSEM_confdict/ PATH_SAVE_METRIC=artifacts/linearSEM_metric/
