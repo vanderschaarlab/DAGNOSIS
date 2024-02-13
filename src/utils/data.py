@@ -6,7 +6,7 @@ from scipy.special import expit as sigmoid
 
 
 def sample_corrupted(
-    D, n_samples, list_feature, list_corruption_type, noise_mean_list=None, mean_linear = 5, std_linear = 1, mean_mlp = 2, std_mlp = 1, sample_last_layer= True
+    D, n_samples, list_feature, list_corruption_type, noise_mean_list=None, mean_linear = 5, std_linear = 1, mean_mlp = 2, std_mlp = 1., sample_last_layer= True
 ):
     """Sample a corrupted dataset where some SEMs have been corrupted."""
     

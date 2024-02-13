@@ -22,6 +22,10 @@ python compute_metrics.py PATH_SAVE_METRIC=path_metrics
 ```
 where ```path_metrics``` denotes the folder where the metrics are saved.
 
+Similarly, you can reproduce the sensitivity experiment by going to the folder ```experiments/synthetic/sensitivity``` and using the script ```run.sh```, followed by 
+```shell
+python compute_metrics.py PATH_SAVE_METRIC=path_metrics
+```
 
 #### UCI Adult Income
 To run the experiments on the UCI Adult Income dataset, go to the folder ```experiments/adult```.
