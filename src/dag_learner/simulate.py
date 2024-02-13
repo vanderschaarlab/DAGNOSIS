@@ -82,7 +82,7 @@ def modify_single_sem(
     mean_linear=5,
     std_linear=1,
     mean_mlp = 2, 
-    std_mlp = 1, 
+    std_mlp = 1., 
     sample_last_layer = True
 ):
     # Given a list of SEMs, modify the SEM indexed at feature_corruption. This list will then be leveraged to generate corrupted data.
