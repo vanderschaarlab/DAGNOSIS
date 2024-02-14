@@ -1,4 +1,4 @@
-
+# third party
 import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
 
@@ -7,7 +7,9 @@ def load_adult() -> pd.DataFrame:
     """Load the Adult dataset in a pandas dataframe"""
 
     path = "https://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.data"
-    test_path = "https://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.test"
+    test_path = (
+        "https://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.test"
+    )
 
     names = [
         "age",
@@ -34,13 +36,11 @@ def load_adult() -> pd.DataFrame:
     for col in df:
         if df[col].dtype == "object":
             df = df[df[col] != "?"]
-    
-    df["income"].replace({'<=50K.': '<=50K', '>50K.': '>50K'}, inplace=True)
+
+    df["income"].replace({"<=50K.": "<=50K", ">50K.": ">50K"}, inplace=True)
 
     return df
 
-
-    
 
 def preprocess_adult(dataset: pd.DataFrame) -> pd.DataFrame:
     """Preprocess adult data set."""
@@ -160,8 +160,8 @@ def preprocess_adult(dataset: pd.DataFrame) -> pd.DataFrame:
     for row in replace:
         df = df.replace(row, range(len(row)))
 
-    df = pd.DataFrame(MinMaxScaler().fit_transform(df),
-                      index=df.index, columns=df.columns)
+    df = pd.DataFrame(
+        MinMaxScaler().fit_transform(df), index=df.index, columns=df.columns
+    )
     df = df.round(decimals=3)
     return df
-

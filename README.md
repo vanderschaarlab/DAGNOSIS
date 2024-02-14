@@ -22,19 +22,19 @@ python compute_metrics.py PATH_SAVE_METRIC=path_metrics
 ```
 where ```path_metrics``` denotes the folder where the metrics are saved.
 
-Similarly, you can reproduce the sensitivity experiment by going to the folder ```experiments/synthetic/sensitivity``` and using the script ```run.sh```, followed by 
+Similarly, you can reproduce the sensitivity experiment by going to the folder ```experiments/synthetic/sensitivity``` and using the script ```run.sh```, followed by
 ```shell
 python compute_metrics.py PATH_SAVE_METRIC=path_metrics
 ```
 
 #### UCI Adult Income
 To run the experiments on the UCI Adult Income dataset, go to the folder ```experiments/adult```.
-In order to train and test the conformal estimators, run 
+In order to train and test the conformal estimators, run
 ```shell
 python train_test_adult.py
 ```
 The artifacts will be saved in the folder ```artifacts_adult```.
-Then, the results can be obtained by executing: 
+Then, the results can be obtained by executing:
 ```shell
 python proportion_flagging.py
 ```
@@ -46,7 +46,3 @@ If you use this software, please cite the original paper:
 ```shell
 TODO
 ```
-
-
-
-

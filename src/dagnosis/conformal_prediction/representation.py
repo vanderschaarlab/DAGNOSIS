@@ -1,3 +1,4 @@
+# third party
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 
@@ -24,7 +25,7 @@ def representation_class_based(
         pca = PCA(n_components=n_components, random_state=seed)
         pcs_train = pca.fit_transform(combined_X_train_sc)
         pcs_samples = pca.transform(samples_sc)
-      
+
     else:
         raise ValueError("Only PCA is supported")
 

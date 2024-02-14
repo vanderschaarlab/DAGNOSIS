@@ -1,7 +1,9 @@
-#Courtesy of https://github.com/kevinsbello/dagma/tree/main
+# Courtesy of https://github.com/kevinsbello/dagma/tree/main
 
+# stdlib
 import math
 
+# third party
 import torch
 import torch.nn as nn
 
@@ -10,8 +12,14 @@ class LocallyConnected(nn.Module):
     """
     Implements a local linear layer, i.e. Conv1dLocal() with filter size 1.
     """
-    
-    def __init__(self, num_linear: int, input_features: int, output_features: int, bias: bool = True):
+
+    def __init__(
+        self,
+        num_linear: int,
+        input_features: int,
+        output_features: int,
+        bias: bool = True,
+    ):
         r"""
         Parameters
         ----------
@@ -23,8 +31,8 @@ class LocallyConnected(nn.Module):
             m2
         bias : bool, optional
             Whether to include bias or not. Default: ``True``.
-        
-        
+
+
         Attributes
         ----------
         weight : [d, m1, m2]
@@ -35,15 +43,15 @@ class LocallyConnected(nn.Module):
         self.input_features = input_features
         self.output_features = output_features
 
-        self.weight = nn.Parameter(torch.Tensor(num_linear,
-                                                input_features,
-                                                output_features))
+        self.weight = nn.Parameter(
+            torch.Tensor(num_linear, input_features, output_features)
+        )
         if bias:
             self.bias = nn.Parameter(torch.Tensor(num_linear, output_features))
         else:
             # You should always register all possible parameters, but the
             # optional ones can be None if you want.
-            self.register_parameter('bias', None)
+            self.register_parameter("bias", None)
 
         self.reset_parameters()
 
@@ -81,8 +89,9 @@ class LocallyConnected(nn.Module):
         """
         Returns a string with extra information from the layer.
         """
-        return 'num_linear={}, in_features={}, out_features={}, bias={}'.format(
-            self.num_linear, self.input_features, self.output_features,
-            self.bias is not None
+        return "num_linear={}, in_features={}, out_features={}, bias={}".format(
+            self.num_linear,
+            self.input_features,
+            self.output_features,
+            self.bias is not None,
         )
-

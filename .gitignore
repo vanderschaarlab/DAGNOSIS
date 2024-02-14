@@ -56,5 +56,5 @@ MANIFEST
 
 # Project specific
 artifacts_final
-experiments/synthetic/artifacts/*
-experiments/synthetic/outputs/*
+artifacts/
+outputs/

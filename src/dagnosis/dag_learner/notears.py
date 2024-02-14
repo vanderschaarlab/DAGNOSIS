@@ -1,13 +1,17 @@
-#from https://github.com/jeroenbe/d-struct
+# from https://github.com/jeroenbe/d-struct
 
+# stdlib
 from typing import Any, Tuple
 
+# third party
 import numpy as np
 import pytorch_lightning as pl
-import src.dag_learner.utils as ut
 import torch
 import torch.nn as nn
-from src.dag_learner.dsl import NotearsMLP, NotearsSobolev
+
+# dagnosis absolute
+import dagnosis.dag_learner.utils as ut
+from dagnosis.dag_learner.dsl import NotearsMLP, NotearsSobolev
 
 
 class NOTEARS(nn.Module):
@@ -17,9 +21,9 @@ class NOTEARS(nn.Module):
         nonlinear_dims: list = [10, 10, 1],  # Dims for non-linear arch
         sem_type: str = "mlp",
         rho: float = 1.0,  # NOTEARS parameters
-        alpha: float = 1.0,  #   |
-        lambda1: float = 0.0,  #   |
-        lambda2: float = 0.0,  #   |
+        alpha: float = 1.0,  # |
+        lambda1: float = 0.0,  # |
+        lambda2: float = 0.0,  # |
     ):
         super().__init__()
 
@@ -121,7 +125,6 @@ class lit_NOTEARS(pl.LightningModule):
         opt = self.optimizers()
 
         (X,) = batch
-
 
         alpha, rho, h = self._dual_ascent_step(X, opt)
         self.h = h

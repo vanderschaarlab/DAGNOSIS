@@ -1,3 +1,4 @@
+# third party
 import numpy as np
 import pandas as pd
 from lightgbm import LGBMRegressor
@@ -28,7 +29,6 @@ class conformalized_quantile_regression:
         )  # train vs cal
         X_train_sc, X_cal_sc, y_train_sc, y_cal_sc = X_train, X_cal, y_train, y_cal
 
-        
         self.range_max = np.max(y_train_sc)
         self.range_min = np.min(y_train_sc)
 
@@ -64,7 +64,7 @@ class conformalized_quantile_regression:
     def predict(self, x_test, y_test):
         X_test_sc = x_test
         y_test_sc = y_test
-       
+
         y_pred, y_pis = self.cp_model.predict(X_test_sc)
 
         lower_bound = y_pis[:, 0, 0]
@@ -79,5 +79,3 @@ class conformalized_quantile_regression:
         feature_range = self.range_max - self.range_min
         df["norm_interval"] = df["conf_interval"] / feature_range
         return df
-
-

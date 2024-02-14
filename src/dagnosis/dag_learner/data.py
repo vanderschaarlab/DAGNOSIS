@@ -1,12 +1,16 @@
+# stdlib
 import copy
 import os
 from typing import Optional
 
+# third party
 import numpy as np
 import pytorch_lightning as pl
-import src.dag_learner.simulate as sm
 import torch
 from torch.utils.data import DataLoader, TensorDataset, random_split
+
+# dagnosis absolute
+import dagnosis.dag_learner.simulate as sm
 
 
 class Data(pl.LightningDataModule):

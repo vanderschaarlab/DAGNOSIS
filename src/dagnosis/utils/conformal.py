@@ -1,10 +1,14 @@
+# stdlib
 import logging
 
+# third party
 import numpy as np
 import pandas as pd
-from src.conformal_prediction.conformal import conformalized_quantile_regression
-from src.utils.dag import find_markov_boundary
 from tqdm import tqdm
+
+# dagnosis absolute
+from dagnosis.conformal_prediction.conformal import conformalized_quantile_regression
+from dagnosis.utils.dag import find_markov_boundary
 
 
 def analyse_conformal_dict(conformal_dict):
@@ -41,7 +45,7 @@ def predict_cp(X_test, list_conf, list_features, DAG):
 
     for feature in list_features:
         conf = list_conf[feature]
-        
+
         conditioning_variables = list_markov_boundary[feature]
 
         y_test_corrupted = X_test[:, feature]
@@ -78,8 +82,6 @@ def predict_cp_pca(X_test, list_conf, list_features, scaler, pca, pca_test=None)
     return conformal_dict_corrupted
 
 
-
-
 def train_cp(
     X_train,
     DAG,
@@ -91,7 +93,7 @@ def train_cp(
     """
     Train the feature wise conformal estimators.
     """
-    
+
     list_conf = [
         None for i in range(X_train.shape[1])
     ]  # List which will contain the conformal predictors for each feature
@@ -134,8 +136,7 @@ def train_cp_pca(
     cal_size=0.2,
     n_search=100,
 ):
-    """Train the feature wise estimators for DATA-SUITE (PCA)
-    """
+    """Train the feature wise estimators for DATA-SUITE (PCA)"""
     list_conf = [None for i in range(X_train.shape[1])]
     for k, feature in tqdm(enumerate(list_features)):
         logging.info(f"Processing feature {feature}")

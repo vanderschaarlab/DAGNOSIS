@@ -1,14 +1,17 @@
+# stdlib
 import itertools
-from typing import Any
 
+# third party
 import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import EarlyStopping
-from src.dag_learner.dagma.nonlinear import DagmaMLP, DagmaNonlinear
-from src.dag_learner.linear import notears_linear
-from src.dag_learner.notears import NOTEARS, lit_NOTEARS
+
+# dagnosis absolute
+from dagnosis.dag_learner.dagma.nonlinear import DagmaMLP, DagmaNonlinear
+from dagnosis.dag_learner.linear import notears_linear
+from dagnosis.dag_learner.notears import NOTEARS, lit_NOTEARS
 
 
 def sample_nodes_to_corrupt(A, k):
@@ -87,7 +90,7 @@ def get_DAG(D, method):
     if method == "gt":
         # Use the ground-truth DAG which was used to generate the data
         return D.DAG
-    
+
     elif method == "notears_linear":
         X_train, _ = (
             D.train.dataset[D.train.indices][0].numpy(),
@@ -137,7 +140,6 @@ def get_DAG(D, method):
                     EarlyStopping(monitor="h", stopping_threshold=nt_h_tol),
                     EarlyStopping(monitor="rho", stopping_threshold=nt_rho_max),
                 ],
-                
             },
         }
 
@@ -148,16 +150,16 @@ def get_DAG(D, method):
 
         A = model.A(grad=False)
         return A
-    
+
     elif method == "dagma_mlp":
         d = D.dim
         X_train = D.train.dataset[D.train.indices][0].numpy()
-        
+
         eq_model = DagmaMLP(dims=[d, 10, 1], bias=True)
         model = DagmaNonlinear(eq_model)
         A = model.fit(X_train, lambda1=0.02, lambda2=0.005)
         return A
-    
+
     elif method == "autoregressive":
         # Triangular matrix
         A = np.tril(np.ones(D.dim), -1)
@@ -222,33 +224,34 @@ def find_children_node(A, node):
     children = np.nonzero(row)[0]
     return children
 
+
 def check_cycle(G):
-    """Check if a directed graph has a cycle, where G is an adjacency matrix
-    """
+    """Check if a directed graph has a cycle, where G is an adjacency matrix"""
     n = G.shape[0]
-    #compute the powers of the adjacency matrix
+    # compute the powers of the adjacency matrix
     powers = [G]
     if np.any(powers[-1].diagonal()):
-            return True
+        return True
     for i in range(n):
         powers.append(powers[-1] @ G)
-        #if the powers of the adjacency matrix have non-zero diagonal, then there is a cycle
+        # if the powers of the adjacency matrix have non-zero diagonal, then there is a cycle
         if np.any(powers[-1].diagonal()):
             return True
-    
+
     return False
 
+
 def sample_corruptions(G, k):
-    
+
     while True:
 
         Gp = G.copy()
-        
+
         n = G.shape[0]
         edges = np.array(list(itertools.product(range(n), range(n))))
-        
+
         edges_not_in_G = edges[np.logical_not(G[edges[:, 0], edges[:, 1]])]
-        #select k edges
+        # select k edges
         edges_to_add = np.random.choice(edges_not_in_G.shape[0], k, replace=False)
         edges_to_add = edges_not_in_G[edges_to_add]
 

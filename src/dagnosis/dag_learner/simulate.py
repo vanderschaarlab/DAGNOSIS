@@ -1,7 +1,9 @@
 # adapted from Zheng et al. (2020) -> https://github.com/xunzheng/notears/blob/master/notears/utils.py
 
+# stdlib
 import copy
 
+# third party
 import igraph as ig
 import numpy as np
 from scipy.special import expit as sigmoid
@@ -72,7 +74,6 @@ def simulate_dag(d, s0, graph_type):
     return B_perm
 
 
-
 def modify_single_sem(
     pa_size,
     corruption_type,
@@ -81,9 +82,9 @@ def modify_single_sem(
     list_parameters,
     mean_linear=5,
     std_linear=1,
-    mean_mlp = 2, 
-    std_mlp = 1., 
-    sample_last_layer = True
+    mean_mlp=2,
+    std_mlp=1.0,
+    sample_last_layer=True,
 ):
     # Given a list of SEMs, modify the SEM indexed at feature_corruption. This list will then be leveraged to generate corrupted data.
     new_SEM_list = copy.deepcopy(list_SEMs)
@@ -93,28 +94,32 @@ def modify_single_sem(
         # Add some gaussian noise to the parameters of the SEM
 
         if "W" in list_parameters[feature_corruption].keys():
-            #Linear SEM
+            # Linear SEM
             W = list_parameters[feature_corruption]["W"]
-            gaussian_noise = (np.random.random(size=W.shape) + mean_linear)*std_linear
+            gaussian_noise = (np.random.random(size=W.shape) + mean_linear) * std_linear
             W_corrupted = W + gaussian_noise
-            corrupted_SEM = lambda X, z: X @ W_corrupted + z
+            corrupted_SEM = lambda X, z: X @ W_corrupted + z  # noqa: E731
             parameter = {"W": W_corrupted}
-            
+
         elif "W2" in list_parameters[feature_corruption].keys():
-            #MLP SEM
+            # MLP SEM
             W2 = list_parameters[feature_corruption]["W2"]
             if sample_last_layer:
                 coordinates = np.random.choice(range(W2.shape[0]), 5, replace=False)
                 gaussian_noise = np.random.random(size=coordinates.shape)
-                
+
                 W2_corrupted = W2
-                W2_corrupted[coordinates] = W2_corrupted[coordinates] + std_mlp*(mean_mlp + gaussian_noise)
+                W2_corrupted[coordinates] = W2_corrupted[coordinates] + std_mlp * (
+                    mean_mlp + gaussian_noise
+                )
             else:
                 gaussian_noise = np.random.random(size=W2.shape)
-                W2_corrupted = W2 + std_mlp*(gaussian_noise+mean_mlp)
-                
+                W2_corrupted = W2 + std_mlp * (gaussian_noise + mean_mlp)
+
             W1 = list_parameters[feature_corruption]["W1"]
-            corrupted_SEM = lambda X, z: sigmoid(X @ W1) @ W2_corrupted + z
+            corrupted_SEM = (
+                lambda X, z: sigmoid(X @ W1) @ W2_corrupted + z
+            )  # noqa: E731
             parameter = {"W1": W1, "W2": W2_corrupted}
         else:
             raise ValueError("Not linear or mlp")
@@ -143,7 +148,7 @@ def generate_SEM(sem_type, pa_size):
         parameters["W1"] = W1
         parameters["W2"] = W2
 
-        SEM = lambda X, z: sigmoid(X @ W1) @ W2 + z
+        SEM = lambda X, z: sigmoid(X @ W1) @ W2 + z  # noqa: E731
 
     elif sem_type == "mim":
         w1 = np.random.uniform(low=0.5, high=2.0, size=pa_size)
@@ -157,17 +162,19 @@ def generate_SEM(sem_type, pa_size):
         parameters["w2"] = w2
         parameters["w3"] = w3
 
-        SEM = lambda X, z: np.tanh(X @ w1) + np.cos(X @ w2) + np.sin(X @ w3) + z
+        SEM = (
+            lambda X, z: np.tanh(X @ w1) + np.cos(X @ w2) + np.sin(X @ w3) + z
+        )  # noqa: E731
 
     elif sem_type == "constant":
         C = np.random.uniform(low=-10, high=10)
-        SEM = lambda X, z: C
+        SEM = lambda X, z: C  # noqa: E731
         parameters["C"] = C
 
     elif sem_type == "linear":
         W = np.random.uniform(low=0.5, high=2.0, size=[pa_size])
         W[np.random.rand(*W.shape) < 0.5] *= -1  # flip the sign with probability 0.5
-        SEM = lambda X, z: X @ W + z
+        SEM = lambda X, z: X @ W + z  # noqa: E731
         parameters["W"] = W
 
     else:

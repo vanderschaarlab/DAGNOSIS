@@ -1,7 +1,9 @@
-#Courtesy of https://github.com/kevinsbello/dagma/tree/main
+# Courtesy of https://github.com/kevinsbello/dagma/tree/main
+# stdlib
 import random
 import typing
 
+# third party
 import igraph as ig
 import numpy as np
 from scipy.special import expit as sigmoid
@@ -32,12 +34,13 @@ def simulate_dag(d: int, s0: int, graph_type: str) -> np.ndarray:
         expected num of edges
     graph_type : str
         One of ``["ER", "SF", "BP"]``
-    
+
     Returns
     -------
     numpy.ndarray
         :math:`(d, d)` binary adj matrix of DAG
     """
+
     def _random_permutation(M):
         # np.random.permutation permutes first axis only
         P = np.random.permutation(np.eye(M.shape[0]))
@@ -49,32 +52,33 @@ def simulate_dag(d: int, s0: int, graph_type: str) -> np.ndarray:
     def _graph_to_adjmat(G):
         return np.array(G.get_adjacency().data)
 
-    if graph_type == 'ER':
+    if graph_type == "ER":
         # Erdos-Renyi
         G_und = ig.Graph.Erdos_Renyi(n=d, m=s0)
         B_und = _graph_to_adjmat(G_und)
         B = _random_acyclic_orientation(B_und)
-    elif graph_type == 'SF':
+    elif graph_type == "SF":
         # Scale-free, Barabasi-Albert
         G = ig.Graph.Barabasi(n=d, m=int(round(s0 / d)), directed=True)
         B = _graph_to_adjmat(G)
-    elif graph_type == 'BP':
+    elif graph_type == "BP":
         # Bipartite, Sec 4.1 of (Gu, Fu, Zhou, 2018)
         top = int(0.2 * d)
         G = ig.Graph.Random_Bipartite(top, d - top, m=s0, directed=True, neimode=ig.OUT)
         B = _graph_to_adjmat(G)
-    elif graph_type == 'Fully':
-        B = np.triu(np.ones((d,d)), 1)
+    elif graph_type == "Fully":
+        B = np.triu(np.ones((d, d)), 1)
     else:
-        raise ValueError('unknown graph type')
+        raise ValueError("unknown graph type")
     B_perm = _random_permutation(B)
     assert ig.Graph.Adjacency(B_perm.tolist()).is_dag()
     return B_perm
 
 
-def simulate_parameter(B: np.ndarray, 
-                       w_ranges: typing.List[typing.Tuple[float,float]]=((-2.0, -0.5), (0.5, 2.0)),
-                       ) -> np.ndarray:
+def simulate_parameter(
+    B: np.ndarray,
+    w_ranges: typing.List[typing.Tuple[float, float]] = ((-2.0, -0.5), (0.5, 2.0)),
+) -> np.ndarray:
     r"""
     Simulate SEM parameters for a DAG.
 
@@ -98,15 +102,16 @@ def simulate_parameter(B: np.ndarray,
     return W
 
 
-def simulate_linear_sem(W: np.ndarray, 
-                        n: int, 
-                        sem_type: str, 
-                        noise_scale: typing.Optional[typing.Union[float,typing.List[float]]] = None,
-                        ) -> np.ndarray:
+def simulate_linear_sem(
+    W: np.ndarray,
+    n: int,
+    sem_type: str,
+    noise_scale: typing.Optional[typing.Union[float, typing.List[float]]] = None,
+) -> np.ndarray:
     r"""
     Simulate samples from linear SEM with specified type of noise.
     For ``uniform``, noise :math:`z \sim \mathrm{uniform}(-a, a)`, where :math:`a` is the ``noise_scale``.
-    
+
     Parameters
     ----------
     W : np.ndarray
@@ -123,26 +128,27 @@ def simulate_linear_sem(W: np.ndarray,
     np.ndarray
         :math:`[n, d]` sample matrix, :math:`[d, d]` if ``n=inf``.
     """
+
     def _simulate_single_equation(X, w, scale):
         """X: [n, num of parents], w: [num of parents], x: [n]"""
-        if sem_type == 'gauss':
+        if sem_type == "gauss":
             z = np.random.normal(scale=scale, size=n)
             x = X @ w + z
-        elif sem_type == 'exp':
+        elif sem_type == "exp":
             z = np.random.exponential(scale=scale, size=n)
             x = X @ w + z
-        elif sem_type == 'gumbel':
+        elif sem_type == "gumbel":
             z = np.random.gumbel(scale=scale, size=n)
             x = X @ w + z
-        elif sem_type == 'uniform':
+        elif sem_type == "uniform":
             z = np.random.uniform(low=-scale, high=scale, size=n)
             x = X @ w + z
-        elif sem_type == 'logistic':
+        elif sem_type == "logistic":
             x = np.random.binomial(1, sigmoid(X @ w)) * 1.0
-        elif sem_type == 'poisson':
+        elif sem_type == "poisson":
             x = np.random.poisson(np.exp(X @ w)) * 1.0
         else:
-            raise ValueError('unknown sem type')
+            raise ValueError("unknown sem type")
         return x
 
     d = W.shape[0]
@@ -152,17 +158,17 @@ def simulate_linear_sem(W: np.ndarray,
         scale_vec = noise_scale * np.ones(d)
     else:
         if len(noise_scale) != d:
-            raise ValueError('noise scale must be a scalar or have length d')
+            raise ValueError("noise scale must be a scalar or have length d")
         scale_vec = noise_scale
     if not is_dag(W):
-        raise ValueError('W must be a DAG')
+        raise ValueError("W must be a DAG")
     if np.isinf(n):  # population risk for linear gauss SEM
-        if sem_type == 'gauss':
+        if sem_type == "gauss":
             # make 1/d X'X = true cov
             X = np.sqrt(d) * np.diag(scale_vec) @ np.linalg.inv(np.eye(d) - W)
             return X
         else:
-            raise ValueError('population risk not available')
+            raise ValueError("population risk not available")
     # empirical risk
     G = ig.Graph.Weighted_Adjacency(W.tolist())
     ordered_vertices = G.topological_sorting()
@@ -174,11 +180,12 @@ def simulate_linear_sem(W: np.ndarray,
     return X
 
 
-def simulate_nonlinear_sem(B:np.ndarray, 
-                           n: int, 
-                           sem_type: str, 
-                           noise_scale: typing.Optional[typing.Union[float,typing.List[float]]] = None,
-                           ) -> np.ndarray:
+def simulate_nonlinear_sem(
+    B: np.ndarray,
+    n: int,
+    sem_type: str,
+    noise_scale: typing.Optional[typing.Union[float, typing.List[float]]] = None,
+) -> np.ndarray:
     r"""
     Simulate samples from nonlinear SEM.
 
@@ -198,20 +205,21 @@ def simulate_nonlinear_sem(B:np.ndarray,
     np.ndarray
         :math:`[n, d]` sample matrix.
     """
+
     def _simulate_single_equation(X, scale):
         """X: [n, num of parents], x: [n]"""
         z = np.random.normal(scale=scale, size=n)
         pa_size = X.shape[1]
         if pa_size == 0:
             return z
-        if sem_type == 'mlp':
+        if sem_type == "mlp":
             hidden = 100
             W1 = np.random.uniform(low=0.5, high=2.0, size=[pa_size, hidden])
             W1[np.random.rand(*W1.shape) < 0.5] *= -1
             W2 = np.random.uniform(low=0.5, high=2.0, size=hidden)
             W2[np.random.rand(hidden) < 0.5] *= -1
             x = sigmoid(X @ W1) @ W2 + z
-        elif sem_type == 'mim':
+        elif sem_type == "mim":
             w1 = np.random.uniform(low=0.5, high=2.0, size=pa_size)
             w1[np.random.rand(pa_size) < 0.5] *= -1
             w2 = np.random.uniform(low=0.5, high=2.0, size=pa_size)
@@ -219,17 +227,28 @@ def simulate_nonlinear_sem(B:np.ndarray,
             w3 = np.random.uniform(low=0.5, high=2.0, size=pa_size)
             w3[np.random.rand(pa_size) < 0.5] *= -1
             x = np.tanh(X @ w1) + np.cos(X @ w2) + np.sin(X @ w3) + z
-        elif sem_type == 'gp':
+        elif sem_type == "gp":
+            # third party
             from sklearn.gaussian_process import GaussianProcessRegressor
+
             gp = GaussianProcessRegressor()
             x = gp.sample_y(X, random_state=None).flatten() + z
-        elif sem_type == 'gp-add':
+        elif sem_type == "gp-add":
+            # third party
             from sklearn.gaussian_process import GaussianProcessRegressor
+
             gp = GaussianProcessRegressor()
-            x = sum([gp.sample_y(X[:, i, None], random_state=None).flatten()
-                     for i in range(X.shape[1])]) + z
+            x = (
+                sum(
+                    [
+                        gp.sample_y(X[:, i, None], random_state=None).flatten()
+                        for i in range(X.shape[1])
+                    ]
+                )
+                + z
+            )
         else:
-            raise ValueError('unknown sem type')
+            raise ValueError("unknown sem type")
         return x
 
     d = B.shape[0]
@@ -251,7 +270,7 @@ def count_accuracy(B_true: np.ndarray, B_est: np.ndarray) -> dict:
     | true positive = predicted association exists in condition in correct direction
     | reverse = predicted association exists in condition in opposite direction
     | false positive = predicted association does not exist in condition
-    
+
     Parameters
     ----------
     B_true : np.ndarray
@@ -270,14 +289,14 @@ def count_accuracy(B_true: np.ndarray, B_est: np.ndarray) -> dict:
     """
     if (B_est == -1).any():  # cpdag
         if not ((B_est == 0) | (B_est == 1) | (B_est == -1)).all():
-            raise ValueError('B_est should take value in {0,1,-1}')
+            raise ValueError("B_est should take value in {0,1,-1}")
         if ((B_est == -1) & (B_est.T == -1)).any():
-            raise ValueError('undirected edge should only appear once')
+            raise ValueError("undirected edge should only appear once")
     else:  # dag
         if not ((B_est == 0) | (B_est == 1)).all():
-            raise ValueError('B_est should take value in {0,1}')
+            raise ValueError("B_est should take value in {0,1}")
         if not is_dag(B_est):
-            raise ValueError('B_est should be a DAG')
+            raise ValueError("B_est should be a DAG")
     d = B_true.shape[0]
     # linear index of nonzeros
     pred_und = np.flatnonzero(B_est == -1)
@@ -309,4 +328,4 @@ def count_accuracy(B_true: np.ndarray, B_est: np.ndarray) -> dict:
     extra_lower = np.setdiff1d(pred_lower, cond_lower, assume_unique=True)
     missing_lower = np.setdiff1d(cond_lower, pred_lower, assume_unique=True)
     shd = len(extra_lower) + len(missing_lower) + len(reverse)
-    return {'fdr': fdr, 'tpr': tpr, 'fpr': fpr, 'shd': shd, 'nnz': pred_size}
+    return {"fdr": fdr, "tpr": tpr, "fpr": fpr, "shd": shd, "nnz": pred_size}
