@@ -1,52 +1,53 @@
+# stdlib
 import glob
+import logging
 import os
+import pickle
+import random
 import sys
+import warnings
 from pathlib import Path
 
+# third party
 import dill
+import hydra
+import numpy as np
+from omegaconf import DictConfig
+
+# dagnosis absolute
+from dagnosis.utils.dag import sample_nodes_to_corrupt
+from dagnosis.utils.data import sample_corrupted
+from dagnosis.utils.utils import compute_TP, compute_TP_pca
 
 PROJECT_ROOT = Path().resolve().parent.parent
 print(PROJECT_ROOT)
 sys.path.append(str(PROJECT_ROOT))
-import logging
-import pickle
-import random
-import warnings
-
 warnings.filterwarnings("ignore")
-
-
-import hydra
-import numpy as np
-from omegaconf import DictConfig
-from src.utils.dag import sample_nodes_to_corrupt
-from src.utils.data import sample_corrupted
-from src.utils.utils import compute_TP, compute_TP_pca
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger()
+
 
 @hydra.main(version_base=None, config_path="conf", config_name="config")
 def main(cfg: DictConfig):
     PATH_LOAD = cfg.PATH_SAVE_CP
     PATH_SAVE_confdict = cfg.PATH_SAVE_CONFDICT
     PATH_SAVE_metric = cfg.PATH_SAVE_METRIC
-    
-    #create folder if does not exist
+
+    # create folder if does not exist
     if not os.path.exists(PATH_SAVE_confdict):
         os.makedirs(PATH_SAVE_confdict)
     if not os.path.exists(PATH_SAVE_metric):
         os.makedirs(PATH_SAVE_metric)
-        
+
     np.random.seed(42)
     random.seed(42)
-    
+
     n_runs = 1
     n_corrupted = cfg.n_corrupted
-    
+
     for filename in glob.glob(PATH_LOAD + "*"):
         logger.info(filename)
-        
 
         with open(filename, "rb") as f:
             dic_results = dill.load(f)
@@ -85,14 +86,16 @@ def main(cfg: DictConfig):
 
             d = len(D_train.DAG)
             noise_mean_list = np.zeros(d)
-            X_test_corrupted, list_corrupted_SEMs, list_corrupted_parameters = (
-                sample_corrupted(
-                    D_train,
-                    n_corrupted,
-                    list_features_corruption,
-                    list_corruption_type,
-                    noise_mean_list=noise_mean_list,
-                )
+            (
+                X_test_corrupted,
+                list_corrupted_SEMs,
+                list_corrupted_parameters,
+            ) = sample_corrupted(
+                D_train,
+                n_corrupted,
+                list_features_corruption,
+                list_corruption_type,
+                noise_mean_list=noise_mean_list,
             )
 
             TP_gt, conf_dict_gt = compute_TP(list_conf_gt, A_gt, X_test_corrupted)
@@ -115,7 +118,6 @@ def main(cfg: DictConfig):
             dic_precision["auto"].append(TP_auto / (TP_auto + FP_auto))
             dic_precision["notears"].append(TP_notears / (TP_notears + FP_notears))
             dic_precision["pca"].append(TP_pca / (TP_pca + FP_pca))
-
 
             id = filename.split("/")[-1]
 
@@ -151,7 +153,7 @@ def main(cfg: DictConfig):
         file_name = os.path.join(PATH_SAVE_metric, id)
         with open(file_name, "wb") as handle:
             pickle.dump(dic_metrics, handle, protocol=pickle.HIGHEST_PROTOCOL)
-            
+
         print(dic_metrics)
 
 

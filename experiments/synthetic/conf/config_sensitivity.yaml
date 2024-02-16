@@ -10,9 +10,8 @@ list_s: [50]
 dagma_type: dagma_mlp
 list_SHD: [10,20,30,40]
 confidence: 0.1
-cal_train_ratio: 0.5 
+cal_train_ratio: 0.5
 PATH_SAVE_DATA: "artifacts/sensitivity_data/"
 PATH_SAVE_CP: "artifacts/sensitivity_cp/"
 PATH_SAVE_CONFDICT: "artifacts/sensitivity_confdict/"
 PATH_SAVE_METRIC: "artifacts/sensitivity_metric/"
-

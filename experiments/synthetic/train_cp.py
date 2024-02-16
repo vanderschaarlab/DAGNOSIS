@@ -1,28 +1,28 @@
-import sys
-from pathlib import Path
-
-PROJECT_ROOT = Path().resolve().parent.parent
-sys.path.append(str(PROJECT_ROOT))
-
-import warnings
-
-warnings.filterwarnings("ignore")
-
-
+# stdlib
 import glob
 import logging
 import random
+import sys
+import warnings
 from copy import deepcopy
+from pathlib import Path
 from typing import Any
 
+# third party
 import dill
 import hydra
 import numpy as np
 import torch
 from omegaconf import DictConfig
-from src.conformal_prediction.representation import representation_class_based
-from src.utils.conformal import train_cp, train_cp_pca
-from src.utils.dag import get_DAG
+
+# dagnosis absolute
+from dagnosis.conformal_prediction.representation import representation_class_based
+from dagnosis.utils.conformal import train_cp, train_cp_pca
+from dagnosis.utils.dag import get_DAG
+
+PROJECT_ROOT = Path().resolve().parent.parent
+sys.path.append(str(PROJECT_ROOT))
+warnings.filterwarnings("ignore")
 
 np.random.seed(42)
 random.seed(42)
@@ -31,6 +31,7 @@ torch.manual_seed(42)
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger()
+
 
 @hydra.main(version_base=None, config_path="conf", config_name="config")
 def main(cfg: DictConfig) -> Any:
@@ -71,7 +72,7 @@ def main(cfg: DictConfig) -> Any:
         ##########################################
         ####### GT DAG ###########################
         ##########################################
-        
+
         artifacts["A_gt"] = A_gt
         list_features = np.arange(d)
 
@@ -95,8 +96,8 @@ def main(cfg: DictConfig) -> Any:
         pca_train, _, pca, scaler = representation_class_based(
             X_train, X_train, rep_dim, "pca"
         )
-        
-        #Get the list of conformal estimators
+
+        # Get the list of conformal estimators
         list_conf_pca = train_cp_pca(
             pca_train, X_train, list_features, alpha, cal_train_ratio
         )
@@ -107,9 +108,9 @@ def main(cfg: DictConfig) -> Any:
         np.testing.assert_array_equal(X_train, X_train_copy)
 
         logger.info("DAGNOSIS Autoregressive")
-        
+
         artifacts["A_auto"] = A_auto
-        #Get the list of conformal estimators
+        # Get the list of conformal estimators
         list_conf_autoregressive = train_cp(
             X_train,
             A_auto,
@@ -124,8 +125,8 @@ def main(cfg: DictConfig) -> Any:
         np.testing.assert_array_equal(X_train, X_train_copy)
         logger.info("DAGNOSIS NOTEARS")
         artifacts["A_notears"] = A_notears
-        
-        #Get the list of conformal estimators
+
+        # Get the list of conformal estimators
         list_conf_notears = train_cp(
             X_train,
             A_notears,
@@ -147,6 +148,7 @@ def main(cfg: DictConfig) -> Any:
         filehandler = open(PATH_SAVE + id, "wb")
         dill.dump(artifacts, filehandler)
         filehandler.close()
+
 
 if __name__ == "__main__":
     main()

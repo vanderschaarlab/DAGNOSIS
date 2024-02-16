@@ -1,36 +1,39 @@
-import sys
-from pathlib import Path
-
-PROJECT_ROOT = Path().resolve().parent.parent
-sys.path.append(str(PROJECT_ROOT))
-import warnings
-
-warnings.filterwarnings("ignore")
+# stdlib
 import glob
 import itertools
 import logging
 import random
+import sys
+import warnings
+from pathlib import Path
 
+# third party
 import dill
 import hydra
 import numpy as np
 import torch
 from omegaconf import DictConfig
-from src.dag_learner.data import Data
+
+# dagnosis absolute
+from dagnosis.dag_learner.data import Data
+
+warnings.filterwarnings("ignore")
+
+PROJECT_ROOT = Path().resolve().parent.parent
+sys.path.append(str(PROJECT_ROOT))
 
 np.random.seed(42)
 random.seed(42)
 torch.manual_seed(42)
 
 
-
-
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger()
 
+
 @hydra.main(version_base=None, config_path="conf", config_name="config")
 def main(cfg: DictConfig):
-    
+
     list_s = cfg.list_s
     n_trials = cfg.n_trials
     sem_type = cfg.sem_type
@@ -41,7 +44,6 @@ def main(cfg: DictConfig):
     PATH_SAVE = cfg.PATH_SAVE_DATA
     Path(PATH_SAVE).mkdir(parents=True, exist_ok=True)
 
-    
     for s, iteration in itertools.product(list_s, np.arange(n_trials)):
         logger.info(
             f"Generating data for sem_type {sem_type}, s {s} and iteration {iteration}"
@@ -86,6 +88,7 @@ def main(cfg: DictConfig):
         filehandler = open(PATH_SAVE + id, "wb")
         dill.dump(data_dic, filehandler)
         filehandler.close()
+
 
 if __name__ == "__main__":
     main()

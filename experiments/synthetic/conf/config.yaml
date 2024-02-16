@@ -8,9 +8,8 @@ graph_type: "ER"
 list_s: [10,20,30,40]
 notears_type: notears_linear
 confidence: 0.1
-cal_train_ratio: 0.2 
+cal_train_ratio: 0.2
 PATH_SAVE_DATA: "artifacts/linearSEM_data/"
 PATH_SAVE_CP: "artifacts/linearSEM_cp/"
 PATH_SAVE_CONFDICT: "artifacts/linearSEM_confdict/"
 PATH_SAVE_METRIC: "artifacts/linearSEM_metric/"
-
